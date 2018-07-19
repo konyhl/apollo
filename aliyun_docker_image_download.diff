@@ -1,0 +1,23 @@
+diff --git a/docker/scripts/dev_start.sh b/docker/scripts/dev_start.sh
+index 54aa8c4..f24f6f4 100755
+--- a/docker/scripts/dev_start.sh
++++ b/docker/scripts/dev_start.sh
+@@ -89,6 +89,9 @@ do
+     -C|--docker-cn-mirror)
+         INCHINA="yes"
+         ;;
++    -A|--aliyun)
++        DOCKER_REPO=registry.cn-shenzhen.aliyuncs.com/apollo_cidi/apollo
++        ;;
+     -image)
+         echo -e "\033[093mWarning\033[0m: This option has been replaced by \"-t\" and \"--tag\", please use the new one.\n"
+         show_usage
+@@ -179,7 +182,7 @@ function local_volumes() {
+ }
+ 
+ function main(){
+-
++    docker login -u gengqxnudt -p cidiapollo999 registry.cn-shenzhen.aliyuncs.com
+     if [ "$LOCAL_IMAGE" = "yes" ];then
+         info "Start docker container based on local image : $IMG"
+     else
