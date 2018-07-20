@@ -295,6 +295,7 @@ void NaviObstacleDecider::GetUnsafeObstaclesInfo(
                                          project_velocity);
     }
   }
+  unsafe_obstacle_info_.clear();
 }
 }  // namespace planning
 }  // namespace apollo
