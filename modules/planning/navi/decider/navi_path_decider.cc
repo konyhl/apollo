@@ -315,7 +315,7 @@ double NaviPathDecider::NudgeProcess(
     const PathDecision& path_decision) {
   double nudge_position_y = 0.0;
 
-  if (!FLAGS_enable_nudge_decision) {
+  if (!FLAGS_enable_nudge_decision_navi) {
     nudge_position_y = path_data_points[0].y();
     return nudge_position_y;
   }
