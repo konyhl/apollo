@@ -23,7 +23,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <limits>
 
 #include "glog/logging.h"
 
@@ -33,7 +32,6 @@
 namespace apollo {
 namespace planning {
 
-using apollo::common::ErrorCode;
 using apollo::common::PathPoint;
 using apollo::common::Status;
 using apollo::common::VehicleConfigHelper;
@@ -154,6 +152,8 @@ Status NaviSpeedDecider::Execute(Frame* frame,
                      ? vehicle_state.linear_acceleration()
                      : 0.0;
   auto start_da = 0.0;
+  //
+  ADEBUG << "WWWWWWWWWW start_v:"<<start_v;
 
   auto ret = MakeSpeedDecision(
       start_s, start_v, start_a, start_da,
@@ -200,7 +200,7 @@ Status NaviSpeedDecider::MakeSpeedDecision(
     return ret;
   }
 
-  ret = AddCurveSpeedConstraints(path_data_points);
+  ret = AddCurveSpeedConstraints();
   if (ret != Status::OK()) {
     AERROR << "Add t-s constraints base on curve failed";
     return ret;
@@ -216,13 +216,15 @@ Status NaviSpeedDecider::MakeSpeedDecision(
   std::vector<NaviSpeedTsPoint> ts_points;
   ret = ts_graph_.Solve(&ts_points);
   if (ret != Status::OK()) {
-    AERROR << "Solve speed points failed";
+    AERROR << "Add t-s constraints base on configs failed";
     return ret;
   }
 
   ts_points.resize(std::min(speed_point_num_limit, ts_points.size()));
 
   speed_data->Clear();
+  //
+  ADEBUG << "XXXXXXXXXXXXXXXXXX num:"<<ts_points.size();
   for (auto& ts_point : ts_points) {
     if (ts_point.v > hard_speed_limit_) {
       AERROR << "The v " << ts_point.v << " of point with s " << ts_point.s
@@ -238,6 +240,7 @@ Status NaviSpeedDecider::MakeSpeedDecision(
       ts_point.a = hard_accel_limit_;
     }
 
+    ADEBUG << "XXXXXXXXXXXXXXXXXX s:"<<ts_point.s<<"\tt:"<<ts_point.t<<"\tv:"<<ts_point.v<<"\ta:"<<ts_point.a;
     speed_data->AppendSpeedPoint(ts_point.s + start_s, ts_point.t, ts_point.v,
                                  ts_point.a, ts_point.da);
   }
@@ -247,6 +250,7 @@ Status NaviSpeedDecider::MakeSpeedDecision(
 
 Status NaviSpeedDecider::AddPerceptionRangeConstraints() {
   // TODO(all):
+
   return Status::OK();
 }
 
@@ -284,45 +288,17 @@ Status NaviSpeedDecider::AddObstaclesConstraints(
   // the end of path just as an obstacle
   auto obstacle_distance = get_obstacle_distance(path_length);
   auto safe_distance = get_safe_distance(0.0);
-  ts_graph_.UpdateObstacleConstraints(obstacle_distance, safe_distance,
-                                      following_accel_ratio_, 0.0,
-                                      preferred_speed_);
+  //ts_graph_.UpdateObstacleConstraints(obstacle_distance, safe_distance,
+  //                                    following_accel_ratio_, 0.0,
+  //                                   preferred_speed_);
 
   // TODO(all): stop decision
 
   return Status::OK();
 }
 
-Status NaviSpeedDecider::AddCurveSpeedConstraints(
-    const std::vector<PathPoint>& path_data_points) {
-  if (path_data_points.size() < 2) {
-    AERROR << "Too few path points";
-    return Status(ErrorCode::PLANNING_ERROR, "too few path points.");
-  }
-
-  const auto bs = path_data_points[0].s();
-  for (size_t i = 1; i < path_data_points.size(); i++) {
-    const auto& prev = path_data_points[i - 1];
-    const auto& cur = path_data_points[i];
-    auto start_s = prev.has_s() ? prev.s() - bs : 0.0;
-    start_s = std::max(0.0, start_s);
-    auto end_s = cur.has_s() ? cur.s() - bs : 0.0;
-    end_s = std::max(0.0, end_s);
-    auto start_k = prev.has_kappa() ? std::abs(prev.kappa()) : 0.0;
-    auto end_k = cur.has_kappa() ? std::abs(cur.kappa()) : 0.0;
-    auto kappa = (start_k + end_k) / 2.0;
-    auto v_max = std::min(curve_speed_limit_ratio_ / (kappa * kappa),
-                          std::numeric_limits<double>::max());
-
-    //
-    std::cout << "----- start_s:" << start_s << "\tend_s:" << end_s
-              << "\tkappa:" << kappa << "\tv_max" << v_max << std::endl;
-    NaviSpeedTsConstraints constraints;
-    constraints.v_max = v_max;
-    constraints.v_preffered = v_max;
-    ts_graph_.UpdateRangeConstraints(start_s, end_s, constraints);
-  }
-
+Status NaviSpeedDecider::AddCurveSpeedConstraints() {
+  // TODO(all):
   return Status::OK();
 }
 

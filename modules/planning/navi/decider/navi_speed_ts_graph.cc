@@ -88,7 +88,6 @@ void NaviSpeedTsGraph::Reset(double s_step, double s_max, double start_v,
   start_da_ = start_da;
 
   auto point_num = (std::size_t)((s_max + s_step_) / s_step_);
-  constraints_.clear();
   constraints_.resize(point_num);
 }
 
@@ -117,7 +116,6 @@ void NaviSpeedTsGraph::UpdateRangeConstraints(
 
   auto start_idx = (std::size_t)(start_s / s_step_);
   auto end_idx = (std::size_t)(end_s / s_step_);
-  if (start_idx == end_idx) end_idx++;
   for (size_t i = start_idx; i < end_idx && i < constraints_.size(); i++)
     CombineConstraints(constraints, &constraints_[i]);
 }
@@ -255,7 +253,7 @@ Status NaviSpeedTsGraph::Solve(std::vector<NaviSpeedTsPoint>* output) {
   auto& point = points[0];
   point.s = 0.0;
   point.t = 0.0;
-  point.v = start_v_;
+  point.v = std::abs(start_v_);
   point.a = start_a_;
   point.da = start_da_;
 
@@ -281,6 +279,8 @@ Status NaviSpeedTsGraph::Solve(std::vector<NaviSpeedTsPoint>* output) {
     // if t_max < t_min
     if (t_max < t_min) {
       AERROR << "failure to satisfy the constraints.";
+      //
+      ADEBUG << "QQQQQQQQQQQQQQQ "<<i*s_step_<<"\tv_max:"<<constraints.v_max<<"\ta_max:"<<constraints.a_max;
       points.resize(i);
       return Status(ErrorCode::PLANNING_ERROR,
                     "failure to satisfy the constraints.");
@@ -341,7 +341,8 @@ Status NaviSpeedTsGraph::Solve(std::vector<NaviSpeedTsPoint>* output) {
   }
 
   // smooth a of the first point
-  if (output->size() > 2) (*output)[0].a = (*output)[1].a;
+  if (output->size() > 2)
+    (*output)[0].a = (*output)[1].a;
 
   for (size_t i = 0; i < output->size(); i++) {
     auto& point = (*output)[i];

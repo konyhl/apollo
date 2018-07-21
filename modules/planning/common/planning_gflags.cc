@@ -177,7 +177,6 @@ DEFINE_double(static_obstacle_speed_threshold, 2.0,
               "obstacles are considered as static obstacle if its speed is "
               "less than this value (m/s)");
 DEFINE_bool(enable_nudge_decision, true, "enable nudge decision");
-DEFINE_bool(enable_nudge_decision_navi, true, "enable navi planner nudge decision");
 DEFINE_bool(enable_nudge_slowdown, true,
             "True to slow down when nudge obstacles.");
 

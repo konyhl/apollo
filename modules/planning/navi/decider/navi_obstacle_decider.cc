@@ -278,6 +278,9 @@ void NaviObstacleDecider::GetUnsafeObstaclesInfo(
         -1.0 * (VehicleParam().left_edge_to_center() + kSafeDistance);
     unsafe_range = std::make_pair(unsafe_car_pos_y, unsafe_refline_pos_y);
   }
+  ADEBUG << "get reference_line_y : " << reference_line_y
+         << "get unsafe_refline_pos_y : " << unsafe_refline_pos_y
+         << "get unsafe_car_pos_y : " << unsafe_car_pos_y;
   // Get obstacles'ID.
   unsafe_obstacle_info_.clear();
   for (const auto& iter : obstacles) {
@@ -295,7 +298,6 @@ void NaviObstacleDecider::GetUnsafeObstaclesInfo(
                                          project_velocity);
     }
   }
-  unsafe_obstacle_info_.clear();
 }
 }  // namespace planning
 }  // namespace apollo
