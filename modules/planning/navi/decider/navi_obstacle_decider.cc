@@ -47,7 +47,7 @@ using apollo::common::math::Vec2d;
 using apollo::common::util::MakePathPoint;
 
 namespace {
-constexpr double kMaxNudgeDistance = 0.9;
+constexpr double kMaxNudgeDistance = 1.9;
 constexpr double kMinNudgeDistance = 0.2;
 }  // namespace
 
